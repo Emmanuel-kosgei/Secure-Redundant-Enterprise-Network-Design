@@ -23,7 +23,7 @@ My goals were:
 | File | Description |
 |------|-------------|
 | `README.md` | This write-up |
-| `configs/full-config.txt` | Full configuration for every device, plus the test plan |
+| `config.txt` | Full configuration for every device, plus the test plan |
 
 ## Addressing plan
 
