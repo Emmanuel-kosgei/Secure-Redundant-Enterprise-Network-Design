@@ -47,7 +47,7 @@ Hosts: STAFF1 192.168.10.11, STAFF2 192.168.10.12, FINANCEMANAGER 192.168.20.11,
 
 ## Configuration
 
-The full configuration for all devices is in [`configs/full-config.txt`](configs/full-config.txt).
+The full configuration for all devices is in [`configs/full-config.txt`]config.txt).
 
 ## Verification
 
