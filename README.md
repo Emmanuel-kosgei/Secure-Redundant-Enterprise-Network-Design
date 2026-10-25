@@ -12,7 +12,7 @@ This lab builds a secure, redundant enterprise network with four routers (HQ, R-
 |------|-------------|
 | `README.md` | This write-up |
 | `topology.json` | Topology exported from the Sandbox |
-| `configs/full-config.txt` | Complete configuration for every device, plus the test plan |
+| `config.txt` | Complete configuration for every device, plus the test plan |
 | `topology.png` | Screenshot of the topology (optional) |
 
 ## Objectives
@@ -47,7 +47,7 @@ Hosts: STAFF1 192.168.10.11, STAFF2 192.168.10.12, FINANCEMANAGER 192.168.20.11,
 
 ## Configuration
 
-The full configuration for all devices is in [`configs/full-config.txt`]config.txt).
+The full configuration for all devices is in config.txt.
 
 ## Verification
 
