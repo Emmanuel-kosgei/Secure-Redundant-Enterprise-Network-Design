@@ -1,0 +1,705 @@
+HQ>en
+HQ#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+HQ(config)#int g0/0
+HQ(config-if)#description To R-STAFF
+HQ(config-if)#ip address 10.0.2.1 255.255.255.0
+HQ(config-if)#ip ospf message-digest-key 1 OSPFKey123
+                                           ^
+% Invalid input detected at '^' marker.
+
+HQ(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+HQ(config-if)#ip nat inside 
+HQ(config-if)#no sh
+*Oct 25 19:44:03.948: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to down
+HQ(config-if)#ex
+HQ(config)#interface gigabitEthernet 0/1
+HQ(config-if)#description To R-MGMT
+HQ(config-if)#ip add 10.0.3.1 255.255.255.0
+HQ(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+HQ(config-if)#ip nat inside 
+HQ(config-if)#no sh
+*Oct 25 19:46:03.884: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to down
+HQ(config-if)#ex
+HQ(config)#int gigabitEthernet 0/2
+HQ(config-if)#description To SERVER
+HQ(config-if)#description To ISP
+HQ(config-if)#ip add 203.0.113.1 255.255.255.252
+HQ(config-if)#ip nat outside 
+HQ(config-if)#ip access-group FROM-INTERNET in 
+HQ(config-if)#no sh
+*Oct 25 19:48:44.248: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:48:45.248: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+HQ(config-if)#ex
+HQ(config)#int gigabitEthernet 0/3
+HQ(config-if)#description To SERVER switch (vlan 30)
+HQ(config-if)#ip add 192.168.30.1 255.255.255.0
+HQ(config-if)#ip access-group TO-SERVER out 
+HQ(config-if)#no sh
+*Oct 25 19:50:02.982: %LINK-3-UPDOWN: Interface GigabitEthernet0/3, changed state to up
+*Oct 25 19:50:03.982: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/3, changed state to up
+HQ(config-if)#ex
+HQ(config)#router ospf1
+                      ^
+% Invalid input detected at '^' marker.
+
+HQ(config)#router ospf 1
+HQ(config-router)#router-id 1.1.1.1
+HQ(config-router)#area 0 authentication message-digest 
+HQ(config-router)#network 10.0.2.0 0.0.0.255 area 0
+HQ(config-router)#network 10.0.3.0 0.0.0.255 area 0
+HQ(config-router)#network 192.168.30.0 0.0.0.255 area 0
+HQ(config-router)#passive-interface g0/3
+HQ(config-router)#ex
+HQ(config)#ip route 0.0.0.0 0.0.0.0 203.0.113.2
+HQ(config)#ip access-list NAT-LIST
+                          ^
+% Invalid input detected at '^' marker.
+
+HQ(config)#ip access-list standard NAT-LIST
+HQ(config-std-nacl)#permit 192.168.10.0 0.0.0.255
+HQ(config-std-nacl)#permit 192.168.20.0 0.0.0.255
+HQ(config-std-nacl)#ex
+HQ(config)#ip nat inside source list NAT-LIST interface gigabitEthernet 0/2 overload 
+HQ(config)#ip access-list extended TO-SERVER
+HQ(config-ext-nacl)#permit 192.168.20.0 0.0.0.255 192.168.30.0 0.0.0.255
+                              ^
+% Invalid input detected at '^' marker.
+
+HQ(config-ext-nacl)#permit ip 192.168.20.0 0.0.0.255 192.168.30.0 0.0.0.255
+HQ(config-ext-nacl)#deny ip any any log
+HQ(config-ext-nacl)#ex
+HQ(config)#ip access-list extended FROM-INTERNET
+HQ(config-ext-nacl)#deny ip any 192.168.30.0 0.0.0.255 log
+HQ(config-ext-nacl)#deny ip any 10.0.0.0 0.255.255.255 any
+                                                       ^
+% Invalid input detected at '^' marker.
+
+HQ(config-ext-nacl)#deny ip 10.0.0.0 0.255.255.255 any
+HQ(config-ext-nacl)#deny ip 192.168.0.0 0.0.255.255 any
+HQ(config-ext-nacl)#deny ip 172.16.0.0 0.15.155.155 any
+HQ(config-ext-nacl)#permint ip any any
+                         ^
+% Invalid input detected at '^' marker.
+
+HQ(config-ext-nacl)#permit ip any any
+HQ(config-ext-nacl)#end
+*Oct 25 20:00:09.589: %SYS-5-CONFIG_I: Configured from console by console
+HQ#wr
+Building configuration...
+[OK]
+*Oct 25 20:01:52.571: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:01:53.571: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:16:13.464: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 20:16:14.464: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+HQ#show ip ospf neighbor 
+HQ#show logging 
+Syslog logging: enabled (0 messages dropped, 0 messages rate-limited, 0 flushes, 0 overruns, xml disabled, filtering disabled)
+
+No Active Message Discriminator.
+
+
+
+No Inactive Message Discriminator.
+
+
+    Console logging: level debugging, 11 messages logged, xml disabled,
+                     filtering disabled
+    Monitor logging: level debugging, 0 messages logged, xml disabled,
+                     filtering disabled
+    Buffer logging:  level debugging, 11 messages logged, xml disabled,
+                    filtering disabled
+    Exception Logging: size (8192 bytes)
+    Count and timestamp logging messages: disabled
+    Persistent logging: disabled
+
+No active filter modules.
+
+    Trap logging: level informational, 11 message lines logged
+        Logging Source-Interface:       VRF Name:
+
+Log Buffer (8192 bytes):
+
+*Oct 25 19:44:03.948: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to down
+*Oct 25 19:46:03.884: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to down
+*Oct 25 19:48:44.248: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:48:45.248: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:50:02.982: %LINK-3-UPDOWN: Interface GigabitEthernet0/3, changed state to up
+*Oct 25 19:50:03.982: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/3, changed state to up
+*Oct 25 20:00:09.589: %SYS-5-CONFIG_I: Configured from console by console
+*Oct 25 20:01:52.571: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:01:53.571: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:16:13.464: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 20:16:14.464: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+HQ#show ip ospf neighbor 
+HQ#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+HQ(config)#router ospf 1
+HQ(config-router)#router-id 1.1.1.1
+HQ(config-router)#network 192.168.30.0 0.0.0.255 area 0
+HQ(config-router)#network 10.0.2.0 0.0.0.255 area 0
+HQ(config-router)#network 10.0.3.0 0.0.0.255 area 0
+HQ(config-router)#network 203.3.113.0 0.0.0.3 area 0
+HQ(config-router)#end
+*Oct 25 21:00:12.585: %SYS-5-CONFIG_I: Configured from console by console
+HQ#
+
+
+
+ISP-INTERNET>en
+ISP-INTERNET#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+ISP-INTERNET(config)#int g0/0
+ISP-INTERNET(config-if)#ip add 203.0.113.2 255.255.255.252
+ISP-INTERNET(config-if)#no sh
+*Oct 25 19:40:02.894: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to down
+ISP-INTERNET(config-if)#ex
+ISP-INTERNET(config)#interface loopback 0
+*Oct 25 19:40:45.163: %LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback0, changed state to up
+ISP-INTERNET(config-if)#ip add 8.8.8.8 255.255.255.255
+ISP-INTERNET(config-if)#end
+*Oct 25 19:41:07.955: %SYS-5-CONFIG_I: Configured from console by console
+ISP-INTERNET#wr
+Building configuration...
+[OK]
+*Oct 25 19:48:44.248: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Oct 25 19:48:45.248: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+ISP-INTERNET#ping 192.168.10.11
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.10.11, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+ISP-INTERNET#show ip ospf neighbor 
+ISP-INTERNET#
+
+
+R-MGMT>en
+R-MGMT#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R-MGMT(config)#int g0/2
+R-MGMT(config-if)#description To HQ
+R-MGMT(config-if)#ip add 10.0.3.2 255.255.255.0
+R-MGMT(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+R-MGMT(config-if)#no sh
+*Oct 25 20:16:13.464: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 20:16:14.464: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+R-MGMT(config-if)#ex
+R-MGMT(config)#int g0/1
+R-MGMT(config-if)#description To R-STAFF
+R-MGMT(config-if)#ip add 10.0.1.2 255.255.255.0
+R-MGMT(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+R-MGMT(config-if)#no sh
+*Oct 25 20:17:29.370: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 20:17:30.370: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+R-MGMT(config-if)#ex
+R-MGMT(config)#int g0/0
+R-MGMT(config-if)#description To MGMTANDFINANCE Switch
+R-MGMT(config-if)#no ip add
+R-MGMT(config-if)#no sh
+*Oct 25 20:18:27.683: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:18:28.683: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+R-MGMT(config-if)#ex
+R-MGMT(config)#int g0/0.10
+R-MGMT(config-subif)#encapsulation dot1Q 10
+R-MGMT(config-subif)#ip add 192.168.10.3 255.255.255.0
+R-MGMT(config-subif)#standby version 2
+R-MGMT(config-subif)#standby 20 ip 192.168.10.1
+*Oct 25 20:20:14.028: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 20 state Speak -> Standby
+*Oct 25 20:20:14.028: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 20 state Standby -> Active
+R-MGMT(config-subif)#no standby 20 ip 192,168.10.1
+                                ^
+% Invalid input detected at '^' marker.
+
+R-MGMT(config-subif)#no standby 20 ip 192.168.10.1
+*Oct 25 20:20:29.409: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 20 state Active -> Disabled
+R-MGMT(config-subif)#no standby 10 ip 192.168.10.1
+R-MGMT(config-subif)#standby 10 ip 192.168.10.1
+*Oct 25 20:21:26.449: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 20:21:26.449: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+R-MGMT(config-subif)#standby 10 priority 100
+R-MGMT(config-subif)#standby 10 preempt 
+R-MGMT(config-subif)#standby 10 Authentication md5 key-string HSRPKey10
+R-MGMT(config-subif)#standby 10 track 20
+R-MGMT(config-subif)#ex
+R-MGMT(config)#int g0/0.20
+R-MGMT(config-subif)#encapsulation dot1Q 20
+R-MGMT(config-subif)#standby 20 ip 192.168.20.3 255.255.255.0
+                                                ^
+% Invalid input detected at '^' marker.
+
+R-MGMT(config-subif)#ip 192.168.20.3 255.255.255.0
+                        ^
+% Invalid input detected at '^' marker.
+
+R-MGMT(config-subif)#ip add 192.168.20.3 255.255.255.0
+R-MGMT(config-subif)#standby version 2
+R-MGMT(config-subif)#standby 20 ip 192.168.20.1
+R-MGMT(config-subif)#standby 20 priority 110
+*Oct 25 20:24:17.732: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 20:24:17.732: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+R-MGMT(config-subif)#standby 20 preempt 
+R-MGMT(config-subif)#standby 20 authentication md5 key-string HSRPKey20
+R-MGMT(config-subif)#standby 20 tRack 20
+R-MGMT(config-subif)#ex
+R-MGMT(config)#router ospf 1
+R-MGMT(config-router)#router-id 3.3.3.3
+R-MGMT(config-router)#network 10.0.1.0 0.0.0.255 area 0
+*Oct 25 20:25:38.736: %OSPF-5-ADJCHG: Process 1, Nbr 2.2.2.2 on GigabitEthernet0/1 from LOADING to FULL, Loading Done
+R-MGMT(config-router)#network 10.0.3.0 0.0.0.255 area 0
+R-MGMT(config-router)#network 192.168.10.0 0.0.0.255 area 0
+R-MGMT(config-router)#network 192.168.20.0 0.0.0.255 area 0
+R-MGMT(config-router)#passive-interface g0/0.10
+R-MGMT(config-router)#passive-interface g0/0.20
+R-MGMT(config-router)#end
+*Oct 25 20:27:06.755: %SYS-5-CONFIG_I: Configured from console by console
+R-MGMT#wr
+Building configuration...
+[OK]
+*Oct 25 20:37:04.591: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Active -> Speak
+*Oct 25 20:37:14.591: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+R-MGMT#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R-MGMT(config)#router ospf 1
+R-MGMT(config-router)#router-id 3.3.3.3
+% OSPF: Reload or use "clear ip ospf process" command, for this to take effect
+R-MGMT(config-router)#clear ip ospf
+                       ^
+% Invalid input detected at '^' marker.
+
+R-MGMT(config-router)#reload
+                        ^
+% Invalid input detected at '^' marker.
+
+*Oct 25 21:05:41.327: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:05:41.327: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:05:41.328: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:05:41.328: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:05:53.278: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Active -> Speak
+*Oct 25 21:22:38.789: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:22:38.789: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:22:38.790: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:22:38.790: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:28:57.711: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:28:57.711: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:28:57.713: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:28:57.713: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:29:09.682: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Active -> Speak
+*Oct 25 21:29:18.884: %OSPF-5-ADJCHG: Process 1, Nbr 2.2.2.2 on GigabitEthernet0/1 from LOADING to FULL, Loading Done
+*Oct 25 21:29:19.682: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+R-MGMT(config-router)#
+
+R-STAFF>en
+R-STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R-STAFF(config)#int g0/2
+R-STAFF(config-if)#description To-HQ
+R-STAFF(config-if)#ip add 10.0.2.2 255.255.255.0
+R-STAFF(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+R-STAFF(config-if)#no sh
+*Oct 25 20:01:52.571: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 20:01:53.571: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+R-STAFF(config-if)#ex
+R-STAFF(config)#int g0/1
+R-STAFF(config-if)#description To STAFF
+R-STAFF(config-if)#description To STAFF switch
+R-STAFF(config-if)#description To R-MGMT
+R-STAFF(config-if)#ip add 10.0.1.1 255.255.255.0
+R-STAFF(config-if)#ip ospf message-digest-key 1 md5 OSPFKey123
+R-STAFF(config-if)#no sh
+*Oct 25 20:04:05.240: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to down
+R-STAFF(config-if)#ex
+R-STAFF(config)#int g0/0
+R-STAFF(config-if)#description TRUNN To STAFF Switch
+R-STAFF(config-if)#no ip add
+R-STAFF(config-if)#no sh
+*Oct 25 20:05:09.318: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+*Oct 25 20:05:10.318: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+R-STAFF(config-if)#ex
+R-STAFF(config)#int gigabitEthernet 0/0.10
+R-STAFF(config-subif)#encapsulation dot1Q 10
+R-STAFF(config-subif)#standby version 2
+R-STAFF(config-subif)#ip add 192.168.10.2 255.255.255.0
+R-STAFF(config-subif)#standby version 2
+R-STAFF(config-subif)#standby 10 ip 192.168.10.1
+R-STAFF(config-subif)#standby 10 priority 110
+*Oct 25 20:07:55.565: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 20:07:55.565: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+R-STAFF(config-subif)#standby 10 preempt 
+R-STAFF(config-subif)#standby 10 authentication md5 key-string HSRPKey10
+R-STAFF(config-subif)#standby 10 track gigabitEthernet0/2 20
+                                       ^
+% Invalid input detected at '^' marker.
+
+R-STAFF(config-subif)#standby 10 track g0/2 20
+                                       ^
+% Invalid input detected at '^' marker.
+
+R-STAFF(config-subif)#standby 10 track gigabitEthernet0/2
+                                       ^
+% Invalid input detected at '^' marker.
+
+R-STAFF(config-subif)#standby 10 track ?
+  <1-1000>  Tracked object number
+R-STAFF(config-subif)#standby 10 track 20
+R-STAFF(config-subif)#ex
+R-STAFF(config)#int gigabitEthernet 0/0.20
+R-STAFF(config-subif)#encapsulation dot1Q 
+% Incomplete command.
+
+R-STAFF(config-subif)#encapsulation dot1Q 20
+R-STAFF(config-subif)#ip add 192.168.20.2 255.255.255.0
+R-STAFF(config-subif)#standby version 2
+R-STAFF(config-subif)#standby 20 ip 192.168.20.1
+R-STAFF(config-subif)#standby 20 priority 100
+*Oct 25 20:12:18.772: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 20:12:18.772: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+R-STAFF(config-subif)#standby 20 preempt 
+R-STAFF(config-subif)#standby 20 authentication md5 key-string  HSRPKey20
+R-STAFF(config-subif)#standby 20 tRack 20
+R-STAFF(config-subif)#ex
+R-STAFF(config)#router ospf 1
+R-STAFF(config-router)#router-id 2.2.2.2
+R-STAFF(config-router)#network 10.0.1.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 10.0.2.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 192.168.10.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 192.168.20.0 0.0.0.255 area 0
+R-STAFF(config-router)#passive-interface g0/0.10
+R-STAFF(config-router)#passive-interface g0/0.20
+R-STAFF(config-router)#ex
+R-STAFF(config)#end
+*Oct 25 20:14:41.362: %SYS-5-CONFIG_I: Configured from console by console
+R-STAFF#wr
+Building configuration...
+[OK]
+*Oct 25 20:17:29.370: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 20:17:30.370: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+*Oct 25 20:25:38.710: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on GigabitEthernet0/1 from LOADING to FULL, Loading Done
+*Oct 25 20:37:05.758: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Active -> Speak
+*Oct 25 20:37:15.758: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+R-STAFF#en
+R-STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R-STAFF(config)#end
+*Oct 25 20:48:40.880: %SYS-5-CONFIG_I: Configured from console by console
+R-STAFF#show standby brief 
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Gi0/0.10    10   100 P Active  local           192.168.10.3    192.168.10.1
+Gi0/0.20    20   90  P Standby 192.168.20.3    local           192.168.20.1
+R-STAFF#show ip ospf neighbor 
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+3.3.3.3           1   FULL/BDR        00:00:31    10.0.1.2        GigabitEthernet0/1
+R-STAFF#show ip route 
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is not set
+
+      10.0.0.0/8 is variably subnetted, 5 subnets, 2 masks
+C        10.0.1.0/24 is directly connected, GigabitEthernet0/1
+L        10.0.1.1/32 is directly connected, GigabitEthernet0/1
+C        10.0.2.0/24 is directly connected, GigabitEthernet0/2
+L        10.0.2.2/32 is directly connected, GigabitEthernet0/2
+O        10.0.3.0/24 [110/2] via 10.0.1.2, 00:25:04, GigabitEthernet0/1
+      192.168.10.0/24 is variably subnetted, 2 subnets, 2 masks
+C        192.168.10.0/24 is directly connected, GigabitEthernet0/0.10
+L        192.168.10.2/32 is directly connected, GigabitEthernet0/0.10
+      192.168.20.0/24 is variably subnetted, 2 subnets, 2 masks
+C        192.168.20.0/24 is directly connected, GigabitEthernet0/0.20
+L        192.168.20.2/32 is directly connected, GigabitEthernet0/0.20
+R-STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+R-STAFF(config)#router ospf 1
+R-STAFF(config-router)#router-id 2.2.2.2
+% OSPF: Reload or use "clear ip ospf process" command, for this to take effect
+R-STAFF(config-router)#network 192.168.20.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 192.168.10.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 10.0.2.0 0.0.0.255 area 0
+R-STAFF(config-router)#network 10.0.1.0 0.0.0.255 area 0
+R-STAFF(config-router)#end
+*Oct 25 21:02:00.342: %SYS-5-CONFIG_I: Configured from console by console
+*Oct 25 21:05:41.252: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:05:41.252: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:05:41.253: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:05:41.253: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:05:53.305: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Active -> Speak
+*Oct 25 21:22:38.728: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:22:38.728: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:22:38.729: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:22:38.729: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:28:57.656: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Speak -> Standby
+*Oct 25 21:28:57.656: %HSRP-5-STATECHANGE: GigabitEthernet0/0.10 Grp 10 state Standby -> Active
+*Oct 25 21:28:57.658: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+*Oct 25 21:28:57.658: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Standby -> Active
+*Oct 25 21:29:09.729: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Active -> Speak
+*Oct 25 21:29:18.727: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on GigabitEthernet0/1 from LOADING to FULL, Loading Done
+*Oct 25 21:29:19.729: %HSRP-5-STATECHANGE: GigabitEthernet0/0.20 Grp 20 state Speak -> Standby
+R-STAFF#
+
+*Oct 25 19:29:08.514: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:29:09.514: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:50:02.982: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 19:50:03.982: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+SERVER>en
+SERVER#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+SERVER(config)#interface gigabitEthernet 0/1
+SERVER(config-if)#description To HQ G0/3
+SERVER(config-if)#switchport mode access 
+SERVER(config-if)#switchport access vlan 30
+% Access VLAN does not exist. Creating vlan 30
+SERVER(config-if)#no sh
+SERVER(config-if)#ex
+SERVER(config)#int gigabitEthernet 0/2
+SERVER(config-if)#description SERVER
+SERVER(config-if)#switchport mode access 
+SERVER(config-if)#switchport access vlan 30
+SERVER(config-if)#spanning-tree portfast 
+%Warning: portfast should only be enabled on ports connected to a single
+ host. Connecting hubs, concentrators, switches, bridges, etc... to this
+ interface  when portfast is enabled, can cause temporary bridging loops.
+ Use with CAUTION
+
+%Portfast has been configured on GigabitEthernet0/2 but will only
+ have effect when the interface is in a non-trunking mode.
+SERVER(config-if)#spanning-tree bpduguard enable 
+SERVER(config-if)#switchport port-security 
+SERVER(config-if)#switchport port-security maximum 1
+SERVER(config-if)#switchport port-security mac-address sticky 
+SERVER(config-if)#switchport port-security violation restrict 
+SERVER(config-if)#no sh
+SERVER(config-if)#end
+*Oct 25 20:42:22.557: %SYS-5-CONFIG_I: Configured from console by console
+SERVER#wr
+Building configuration...
+[OK]
+*Oct 25 21:05:25.334: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 8251.9896.6243 on port GigabitEthernet0/2.
+*Oct 25 21:22:22.794: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 8251.9896.6243 on port GigabitEthernet0/2.
+*Oct 25 21:28:41.717: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 8251.9896.6243 on port GigabitEthernet0/2.
+SERVER#
+
+
+Oct 25 19:29:08.478: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 19:29:08.510: %LINK-3-UPDOWN: Interface FastEthernet0/2, changed state to up
+*Oct 25 19:29:08.517: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:29:09.478: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+*Oct 25 19:29:09.510: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/2, changed state to up
+*Oct 25 19:29:09.517: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+*Oct 25 20:05:09.318: %LINK-3-UPDOWN: Interface FastEthernet0/1, changed state to up
+*Oct 25 20:05:10.318: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+STAFF>en
+STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+STAFF(config)#do show vlan br
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/1, Fa0/2, Fa0/3, Fa0/4
+                                                Fa0/5, Fa0/6, Fa0/7, Fa0/8
+                                                Fa0/9, Fa0/10, Fa0/11, Fa0/12
+                                                Fa0/13, Fa0/14, Fa0/15, Fa0/16
+                                                Fa0/17, Fa0/18, Fa0/19, Fa0/20
+                                                Fa0/21, Fa0/22, Fa0/23, Fa0/24
+                                                Gi0/1, Gi0/2
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+1005 trnet-default                    act/unsup 
+STAFF(config)#vlan 10
+STAFF(config-vlan)#name STAFF
+STAFF(config-vlan)#EX
+STAFF(config)#vlan 20
+STAFF(config-vlan)#name MGMT-FINANCE
+STAFF(config-vlan)#EX
+STAFF(config)#vlan 999
+STAFF(config-vlan)#name NATIVE-UNUSED
+STAFF(config-vlan)#ex
+STAFF(config)#int range fastEthernet 0/1 - 2
+STAFF(config-if-range)#switchport trunk encapsulation dot1q 
+STAFF(config-if-range)#switchport mode trunk 
+STAFF(config-if-range)#switchport trunk native vlan 999
+*Oct 25 20:30:45.532: %SPANTREE-2-RECV_PVID_ERR: Received BPDU with inconsistent peer vlan id 1 on FastEthernet0/2 VLAN999.
+*Oct 25 20:30:45.532: %SPANTREE-2-BLOCK_PVID_PEER: Blocking FastEthernet0/2 on VLAN0001. Inconsistent peer vlan.
+*Oct 25 20:30:45.532: %SPANTREE-2-BLOCK_PVID_LOCAL: Blocking FastEthernet0/2 on VLAN0999. Inconsistent local vlan.
+STAFF(config-if-range)#switchport trunk allowed vlan 10,20
+*Oct 25 20:31:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+STAFF(config-if-range)#no sh
+STAFF(config-if-range)#ex
+STAFF(config)#int range gigabitEthernet 0/1-2
+STAFF(config-if-range)#switchport mode access 
+STAFF(config-if-range)#switchport access vlan 10,20
+                                                ^
+% Invalid input detected at '^' marker.
+
+STAFF(config-if-range)#switchport access vlan 10
+*Oct 25 20:32:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+STAFF(config-if-range)#spanning-tree portfast 
+%Warning: portfast should only be enabled on ports connected to a single
+ host. Connecting hubs, concentrators, switches, bridges, etc... to this
+ interface  when portfast is enabled, can cause temporary bridging loops.
+ Use with CAUTION
+
+%Portfast will be configured in 2 interfaces due to the range command
+ but will only have effect when the interfaces are in a non-trunking mode.
+STAFF(config-if-range)#spanning-tree bpduguard enable 
+STAFF(config-if-range)#switchport port-security 
+STAFF(config-if-range)#switchport port-security maximum 1
+STAFF(config-if-range)#switchport port-security mac-address sticky 
+STAFF(config-if-range)#switchport port-security violation restrict 
+STAFF(config-if-range)#no sh
+*Oct 25 20:33:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+STAFF(config-if-range)#en
+*Oct 25 20:33:25.335: %SYS-5-CONFIG_I: Configured from console by console
+STAFF#wr
+Building configuration...
+[OK]
+*Oct 25 20:34:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+*Oct 25 20:35:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+*Oct 25 20:36:09.532: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on FastEthernet0/2 (999), with MGMTANDFINACE GigabitEthernet0/1 (1).
+STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+STAFF(config)#int range fastEthernet 0/1-2
+STAFF(config-if-range)#switchport trunk encapsulation dot1q 
+STAFF(config-if-range)#switchport mode trunk 
+STAFF(config-if-range)#switchport trunk native vlan 999
+STAFF(config-if-range)#end
+*Oct 25 20:39:49.351: %SYS-5-CONFIG_I: Configured from console by console
+STAFF#wr
+Building configuration...
+[OK]
+STAFF#show interfaces trunk 
+
+Port        Mode             Encapsulation  Status        Native vlan
+Fa0/1       on               802.1q         trunking      999
+Fa0/2       on               802.1q         trunking      999
+
+Port        Vlans allowed on trunk
+Fa0/1       10,20
+Fa0/2       10,20
+
+Port        Vlans allowed and active in management domain
+Fa0/1       10,20
+Fa0/2       10,20
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Fa0/1       10,20
+Fa0/2       10,20
+STAFF#show vlan br
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/3, Fa0/4, Fa0/5, Fa0/6
+                                                Fa0/7, Fa0/8, Fa0/9, Fa0/10
+                                                Fa0/11, Fa0/12, Fa0/13, Fa0/14
+                                                Fa0/15, Fa0/16, Fa0/17, Fa0/18
+                                                Fa0/19, Fa0/20, Fa0/21, Fa0/22
+                                                Fa0/23, Fa0/24
+10   STAFF                            active    Gi0/1, Gi0/2
+20   MGMT-FINANCE                     active    
+999  NATIVE-UNUSED                    active    
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+1005 trnet-default                    act/unsup 
+STAFF#show standby br
+STAFF#show standby brief
+STAFF#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+STAFF(config)#ip routing
+STAFF(config)#end
+*Oct 25 20:54:58.339: %SYS-5-CONFIG_I: Configured from console by console
+STAFF#wr
+Building configuration...
+[OK]
+*Oct 25 21:05:25.338: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 2280.0148.1884 on port GigabitEthernet0/2.
+*Oct 25 21:22:22.797: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 2280.0148.1884 on port GigabitEthernet0/2.
+*Oct 25 21:28:41.720: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 2280.0148.1884 on port GigabitEthernet0/2.
+STAFF#
+
+
+*Oct 25 19:29:08.510: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up
+*Oct 25 19:29:08.520: %LINK-3-UPDOWN: Interface FastEthernet0/1, changed state to up
+*Oct 25 19:29:08.522: %LINK-3-UPDOWN: Interface GigabitEthernet0/2, changed state to up
+*Oct 25 19:29:09.510: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/1, changed state to up
+*Oct 25 19:29:09.520: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+*Oct 25 19:29:09.522: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/2, changed state to up
+*Oct 25 20:18:27.683: %LINK-3-UPDOWN: Interface FastEthernet0/2, changed state to up
+*Oct 25 20:18:28.683: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/2, changed state to up
+*Oct 25 20:30:33.369: %SPANTREE-7-RECV_1Q_NON_TRUNK: Received 802.1Q BPDU on non trunk GigabitEthernet0/1 VLAN1.
+*Oct 25 20:30:33.369: %SPANTREE-7-BLOCK_PORT_TYPE: Blocking GigabitEthernet0/1 on VLAN0001. Inconsistent port type.
+*Oct 25 20:30:45.499: %SPANTREE-2-RECV_PVID_ERR: Received BPDU with inconsistent peer vlan id 999 on GigabitEthernet0/1 VLAN1.
+*Oct 25 20:30:45.499: %SPANTREE-2-BLOCK_PVID_LOCAL: Blocking GigabitEthernet0/1 on VLAN0001. Inconsistent local vlan.
+*Oct 25 20:31:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+*Oct 25 20:31:20.499: %SPANTREE-2-UNBLOCK_CONSIST_PORT: Unblocking GigabitEthernet0/1 on VLAN0001. Port consistency restored.
+*Oct 25 20:32:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+*Oct 25 20:33:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+MGMTANDFINACE>en
+MGMTANDFINACE#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+MGMTANDFINACE(config)#vlan 10\
+                           ^
+% Invalid input detected at '^' marker.
+
+MGMTANDFINACE(config)#vlan 10
+*Oct 25 20:34:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+MGMTANDFINACE(config-vlan)#name STAFF
+MGMTANDFINACE(config-vlan)#EX
+MGMTANDFINACE(config)#vlan 20
+MGMTANDFINACE(config-vlan)#name MGMT-FINANCE
+MGMTANDFINACE(config-vlan)#EX
+MGMTANDFINACE(config)#vlan 999
+*Oct 25 20:35:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+MGMTANDFINACE(config-vlan)#name NATIVE-UNUSED
+MGMTANDFINACE(config-vlan)#EX
+*Oct 25 20:36:09.498: %CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet0/1 (1), with STAFF FastEthernet0/2 (999).
+MGMTANDFINACE(config)#interface range FastEthernet0/2,g0/1
+MGMTANDFINACE(config-if-range)#switchport trunk encapsulation dot1q 
+MGMTANDFINACE(config-if-range)#switchport mode trunk 
+MGMTANDFINACE(config-if-range)#switchport trunk native vlan 999
+MGMTANDFINACE(config-if-range)#switchport trunk allowed vlan 10,20
+MGMTANDFINACE(config-if-range)#no sh
+MGMTANDFINACE(config-if-range)#ex
+MGMTANDFINACE(config)#int range fastEthernet 0/1,g0/2
+MGMTANDFINACE(config-if-range)#switchport mode access 
+MGMTANDFINACE(config-if-range)#switchport access vlan 20
+MGMTANDFINACE(config-if-range)#spanning-tree portfast 
+%Warning: portfast should only be enabled on ports connected to a single
+ host. Connecting hubs, concentrators, switches, bridges, etc... to this
+ interface  when portfast is enabled, can cause temporary bridging loops.
+ Use with CAUTION
+
+%Portfast will be configured in 2 interfaces due to the range command
+ but will only have effect when the interfaces are in a non-trunking mode.
+MGMTANDFINACE(config-if-range)#spanning-tree bpduguard enable 
+MGMTANDFINACE(config-if-range)#switchport port-security 
+MGMTANDFINACE(config-if-range)#switchport port-security maximum 1
+MGMTANDFINACE(config-if-range)#switchport port-security mac-address sticky 
+MGMTANDFINACE(config-if-range)#switchport port-security violation restrict 
+MGMTANDFINACE(config-if-range)#no sh
+MGMTANDFINACE(config-if-range)#emd
+                                ^
+% Invalid input detected at '^' marker.
+
+MGMTANDFINACE(config-if-range)#wr
+                               ^
+% Invalid input detected at '^' marker.
+
+MGMTANDFINACE(config-if-range)#end
+*Oct 25 20:38:44.510: %SYS-5-CONFIG_I: Configured from console by console
+MGMTANDFINACE#wr
+Building configuration...
+[OK]
+*Oct 25 21:05:25.348: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 5212.9707.8731 on port GigabitEthernet0/2.
+*Oct 25 21:22:22.808: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 5212.9707.8731 on port GigabitEthernet0/2.
+*Oct 25 21:28:41.735: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC address 5212.9707.8731 on port GigabitEthernet0/2.
+MGMTANDFINACE#
+
