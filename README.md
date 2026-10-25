@@ -1,27 +1,29 @@
 # Secure Redundant Enterprise Network Design
 
-Topics: HSRP · OSPF · ACL · NAT · Port Security
+In this lab I designed and configured a small enterprise network that stays online if a router fails, keeps a server locked down, and logs suspicious devices without cutting anyone off. It covers HSRP, OSPF, ACLs, NAT and port security.
 
-## Summary
+## What I built
 
-This lab builds a secure, redundant enterprise network with four routers (HQ, R-STAFF, R-MGMT, ISP) and three switches. HSRP gives VLAN 10 (Staff) and VLAN 20 (Management/Finance) gateway redundancy, and OSPF with MD5 authentication handles routing. An ACL lets only VLAN 20 reach the VLAN 30 server, which is also blocked from the Internet. Sticky-MAC port security in restrict mode logs violations for auditing without shutting ports down.
+The network has four routers (HQ, R-STAFF, R-MGMT and ISP-INTERNET) and three switches serving three VLANs:
+
+- **VLAN 10, Staff:** 192.168.10.0/24
+- **VLAN 20, Management and Finance:** 192.168.20.0/24
+- **VLAN 30, Server:** 192.168.30.0/24
+
+My goals were:
+
+1. Give users a gateway that survives a router failure (HSRP).
+2. Let all routers learn each other's networks automatically (OSPF).
+3. Allow only the management VLAN to reach the server.
+4. Keep the server completely unreachable from the Internet.
+5. Add sticky-MAC port security that only logs violations, so it can be used for auditing.
 
 ## Repository contents
 
 | File | Description |
 |------|-------------|
 | `README.md` | This write-up |
-| `topology.json` | Topology exported from the Sandbox |
-| `config.txt` | Complete configuration for every device, plus the test plan |
-| `topology.png` | Screenshot of the topology (optional) |
-
-## Objectives
-
-- Provide first-hop redundancy with HSRP, load-shared between two routers.
-- Run OSPF area 0 with MD5 authentication and passive LAN interfaces.
-- Allow only the Management VLAN to reach the server.
-- Keep the server unreachable from the Internet.
-- Apply sticky-MAC port security (restrict mode) for auditing, then verify everything.
+| `configs/full-config.txt` | Full configuration for every device, plus the test plan |
 
 ## Addressing plan
 
@@ -37,36 +39,44 @@ This lab builds a secure, redundant enterprise network with four routers (HQ, R-
 
 Hosts: STAFF1 192.168.10.11, STAFF2 192.168.10.12, FINANCEMANAGER 192.168.20.11, MANAGER 192.168.20.12, SERVER1 192.168.30.10.
 
-## Design
+## How I approached it
 
-- HSRP: R-STAFF is active for VLAN 10 (priority 110) and R-MGMT for VLAN 20 (priority 110). Each is standby for the other, with preempt, MD5 authentication and uplink tracking.
-- OSPF: Area 0 on all routers with MD5 authentication. LAN-facing subinterfaces and the server link are passive. HQ originates the default route toward the ISP.
-- Server isolation: An outbound ACL on HQ G0/3 permits only 192.168.20.0/24 and denies and logs everything else.
-- Server hidden from the Internet: An inbound ACL on HQ G0/2 blocks traffic to 192.168.30.0/24. VLAN 30 is excluded from NAT, so the server cannot be reached from or browse the Internet.
-- Port security: Sticky MAC, maximum 1, violation mode `restrict` on every access port, plus PortFast and BPDU guard.
+**HSRP.** Both R-STAFF and R-MGMT connect to the switches over trunks, using router-on-a-stick subinterfaces. Instead of making one router do all the work, I split the load: R-STAFF is active for VLAN 10 and R-MGMT is active for VLAN 20. Each is the standby for the other's VLAN. I enabled preempt, MD5 authentication and tracking on the uplink to HQ, so a router with a dead uplink gives up its active role.
+
+**OSPF.** All routers run area 0 with MD5 authentication. I made the LAN-facing subinterfaces and the server link passive so no routing updates leak toward end devices. HQ advertises a default route to the rest of the network using `default-information originate`.
+
+**Server access control.** I put an outbound ACL on HQ G0/3, the port facing the server. It permits only 192.168.20.0/24 and denies and logs everything else. Putting it outbound filters traffic going to the server while leaving the server's replies alone.
+
+**Keeping the server off the Internet.** I used three layers:
+- An inbound ACL on HQ G0/2 that blocks anything addressed to 192.168.30.0/24.
+- NAT that only translates VLAN 10 and VLAN 20, so VLAN 30 is never exposed.
+- An ISP with no route to my private address space.
+
+**Port security.** Every access port uses sticky MAC with a maximum of 1 and violation mode `restrict`. In this mode an unknown device's frames are dropped and the event is logged and counted, but the port stays up. That gives me an audit trail without causing outages. I also enabled PortFast and BPDU guard on access ports.
 
 ## Configuration
 
-The full configuration for all devices is in config.txt.
+The complete configuration for all devices is in [`config.txt`](config.txt).
 
-## Verification
+## How I verify it
 
-| Test | Command or action | Expected result |
-|------|-------------------|-----------------|
+| Test | Command or action | What I expect |
+|------|-------------------|---------------|
 | Trunks | `show interfaces trunk` | Trunking, VLANs 10 and 20 allowed |
-| HSRP roles | `show standby brief` | R-STAFF active VLAN 10, R-MGMT active VLAN 20 |
+| HSRP roles | `show standby brief` | R-STAFF active for VLAN 10, R-MGMT active for VLAN 20 |
 | HSRP failover | Shut R-STAFF Gi0/2, ping 192.168.10.1 | R-MGMT takes over, 1 to 3 pings lost |
 | OSPF | `show ip ospf neighbor` | All neighbours FULL |
-| Routes | `show ip route ospf` | VLAN 10, 20, 30 routes and default route learned |
+| Routes | `show ip route ospf` | VLAN 10, 20, 30 routes and the default route learned |
 | Inter-VLAN | STAFF1 ping 192.168.20.12 | Success |
-| Internet | STAFF1 and MANAGER ping 8.8.8.8 | Success (NAT entries on HQ) |
-| Server, VLAN 20 | MANAGER ping 192.168.30.10 | Success |
-| Server, VLAN 10 | STAFF1 ping 192.168.30.10 | Fails (administratively prohibited) |
+| Internet | STAFF1 and MANAGER ping 8.8.8.8 | Success, NAT entries appear on HQ |
+| Server from VLAN 20 | MANAGER ping 192.168.30.10 | Success |
+| Server from VLAN 10 | STAFF1 ping 192.168.30.10 | Fails (administratively prohibited) |
 | Server from Internet | ISP ping 192.168.30.10 | Fails, deny counters rise on `FROM-INTERNET` |
 | Sticky MAC | `show port-security interface g0/2` | Secure-up, 1 sticky MAC, mode Restrict |
 | Violation | Connect an unknown host to a secured port | Frames dropped, port stays up, violation count and log entry increase |
 
-## Notes
+## Things to know
 
-- MANAGER and FINANCEMANAGER share VLAN 20, so both can reach the server. To allow only MANAGER, change the first `TO-SERVER` line to `permit ip host 192.168.20.12 192.168.30.0 0.0.0.255`.
-- If a switch rejects `switchport trunk encapsulation dot1q`, omit it. If HSRP interface tracking is rejected, use `track 1 interface Gi0/2 line-protocol` with `standby 10 track 1 decrement 20`.
+- MANAGER and FINANCEMANAGER share VLAN 20, so both can reach the server. If only MANAGER should have access, change the first `TO-SERVER` line to `permit ip host 192.168.20.12 192.168.30.0 0.0.0.255`.
+- Some switch images reject `switchport trunk encapsulation dot1q`. If yours does, leave that line out.
+- If your router rejects `standby 10 track GigabitEthernet0/2 20`, use `track 1 interface Gi0/2 line-protocol` with `standby 10 track 1 decrement 20`.
