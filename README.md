@@ -75,8 +75,3 @@ The complete configuration for all devices is in [`config.txt`](config.txt).
 | Sticky MAC | `show port-security interface g0/2` | Secure-up, 1 sticky MAC, mode Restrict |
 | Violation | Connect an unknown host to a secured port | Frames dropped, port stays up, violation count and log entry increase |
 
-## Things to know
-
-- MANAGER and FINANCEMANAGER share VLAN 20, so both can reach the server. If only MANAGER should have access, change the first `TO-SERVER` line to `permit ip host 192.168.20.12 192.168.30.0 0.0.0.255`.
-- Some switch images reject `switchport trunk encapsulation dot1q`. If yours does, leave that line out.
-- If your router rejects `standby 10 track GigabitEthernet0/2 20`, use `track 1 interface Gi0/2 line-protocol` with `standby 10 track 1 decrement 20`.
